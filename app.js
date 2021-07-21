@@ -25,21 +25,19 @@ console.log(weather);
 
 //Affectation destructurée
 
-const city = weather.city;
-const temperature = weather.temperature;
+let { city, temperature } = weather
 
 console.log(city);
 console.log(temperature);
 
 //Rest operator
 
-const parisId = citiesId.shift();
-const nycId = citiesId.shift();
-const othersCitiesId = citiesId.length;
+const [parisId, nycId, ...othersCitiesId] = citiesId;
+
 
 console.log(parisId);
 console.log(nycId);
-console.log(othersCitiesId);
+console.log(othersCitiesId.length);
 
 // Classe 
 class Trip {
@@ -84,7 +82,7 @@ class FreeTrip extends Trip {
     price = 0;
 
     toString() {
-        return "FreeTrip [" + this.id + ", " + this.name + ", " + this.imageUrl + ", " + this.price + "]";
+        return "Free" + super.toString()
     }
 }
 
@@ -111,15 +109,13 @@ class TripService {
             setTimeout(() => {
                 // ici l'exécution du code est asynchrone
                 // TODO utiliser resolve et reject en fonction du résultat de la recherche
-                if (tripName == "paris") {
-                    resolve(console.log("Trip found : " + this.tripServiceSet.values().next().value));
-                } else if (tripName == "nantes") {
-                    resolve(console.log("Trip found : " + this.tripServiceSet.values().next().value));
-                } else if (tripName == "rio-de-janeiro") {
-                    resolve(console.log("Trip found : " + this.tripServiceSet.values().next().value));
-                } else {
-                    reject(console.log("No trip with name " + tripName));
-                }
+                this.tripServiceSet.forEach(element => {
+                    if (element.name === tripName) {
+                        resolve(element.id)
+                    } else {
+                        reject("No trip with name " + tripName)
+                    }
+                });
             }, 2000)
         });
     }
@@ -141,13 +137,10 @@ class PriceService {
                 // ici l'exécution du code est asynchrone
                 // TODO utiliser resolve et reject en fonction du résultat de
                 //la recherche
-
-                if (tripId == "paris") {
-                    resolve(console.log("Price found : " + this.tripServiceMap.get("paris")))
-                } else if (tripId == "rio-de-janeiro") {
-                    resolve(console.log("Price found : " + this.tripServiceMap.get("rio-de-janeiro")))
+                if (this.tripServiceMap.has(tripId)) {
+                    resolve("Price found : " + this.tripServiceMap.get(tripId))
                 } else {
-                    reject(console.log("No price for trip id " + tripId))
+                    reject("No price for trip id " + tripId)
                 }
             }, 2000)
         });
@@ -157,5 +150,16 @@ class PriceService {
 const tripservice = new TripService();
 const priceservice = new PriceService();
 
-tripservice.findByName("paris")
-priceservice.findPriceByTripId("paris")
+tripservice.findByName("Paris")
+    .then((value) => console.log(value))
+    .catch((err) => console.log(err))
+
+tripservice.findByName("Toulouse")
+    .then((value) => console.log(value))
+    .catch((err) => console.log(err))
+
+tripservice.findByName("Rio de Janeiro")
+    .then((value) => priceservice.findPriceByTripId(value)
+        .then((id) => console.log(id))
+        .catch((error) => console.log(error)))
+    .catch((error) => console.log(error))
